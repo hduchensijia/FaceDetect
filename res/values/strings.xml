@@ -26,5 +26,9 @@
     <string name="title_activity_signin">Signin</string>
     <string name="pleaseinputname">请输入用户名！</string>
     <string name="pleaseinputcode">请输入密码！</string>
+    <string name="title_activity_indexshow">Indexshow</string>
+    <string name="title_activity_inedxshow">Inedxshow</string>
+    <string name="history_index">历史记录</string>
+    <string name="resultshow">历史记录</string>
 
 </resources>

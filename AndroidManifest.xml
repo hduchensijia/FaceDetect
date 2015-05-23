@@ -34,6 +34,11 @@
             android:name="com.example.facedetect.Facedetect"
             android:label="@string/title_activity_facedetect" >
         </activity>
+        
+            <activity
+            android:name="com.canvas.draw.ResultShow"
+            android:label="@string/resultshow" >
+        </activity>
         <activity
             android:name="com.example.facedetect.PicSrc"
             android:label="@string/title_activity_pic_src" >
@@ -45,6 +50,14 @@
         <activity
             android:name="com.example.mainview.Register"
             android:label="@string/title_activity_signin" >
+        </activity>
+        <activity
+            android:name="com.example.datashow.ShowView"
+            android:label="@string/title_activity_indexshow" >
+        </activity>
+        <activity
+            android:name="com.example.datashow.Indexshow"
+            android:label="@string/title_activity_inedxshow" >
         </activity>
     </application>
 

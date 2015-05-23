@@ -2,19 +2,29 @@ package com.example.facedetect;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.Random;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 
+
+import com.canvas.draw.ResultShow;
+import com.example.mainview.MainActivity;
 import com.facepp.error.FaceppParseException;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
+import com.gem.hsx.sqlite.daliydata;
+
 ///import com.facpp.picturedetect.R;
 //import com.facpp.picturedetect.R;
 
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -23,10 +33,12 @@ import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.database.Cursor;
 public class Facedetect extends Activity {
 	private ImageView faceshow;
 	
@@ -38,15 +50,21 @@ public class Facedetect extends Activity {
 	private Button buttonDetect = null;
 	private TextView textView = null;
 	private TextView textViewResult = null;
+	private float [] HealthArry;
+	private daliydata ddb;
+	private Cursor mCursor;
+	private Button History_button;
 	/////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_facedetect);
 
-		faceshow=(ImageView)findViewById(R.id.imageView1);
+		 faceshow=(ImageView)findViewById(R.id.imageView1);
 		 textView = (TextView)this.findViewById(R.id.textView1);
 		 textViewResult= (TextView)this.findViewById(R.id.textView2);
+		 History_button=(Button)findViewById(R.id.button1);
+		 
 		Bundle bundle = getIntent().getExtras();
 		boolean local=bundle.getBoolean("local");
 		if(local){
@@ -95,87 +113,56 @@ public class Facedetect extends Activity {
 				canvas.drawBitmap(img, new Matrix(), null);
 				
 				
-				try {
-					//find out all faces
-					final int count = rst.getJSONArray("face").length();
-			
-					for (int i = 0; i < count; ++i) {
-						float x, y, w, h;
-						//get the center point
-						x = (float)rst.getJSONArray("face").getJSONObject(i)
-								.getJSONObject("position").getJSONObject("center").getDouble("x");
-						y = (float)rst.getJSONArray("face").getJSONObject(i)
-								.getJSONObject("position").getJSONObject("center").getDouble("y");
 
-						//get face size
-						w = (float)rst.getJSONArray("face").getJSONObject(i)
-								.getJSONObject("position").getDouble("width");
-						h = (float)rst.getJSONArray("face").getJSONObject(i)
-								.getJSONObject("position").getDouble("height");
-						
-						//change percent value to the real size
-						x = x / 100 * img.getWidth();
-						w = w / 100 * img.getWidth() * 0.7f;
-						y = y / 100 * img.getHeight();
-						h = h / 100 * img.getHeight() * 0.7f;
-
-						//draw the box to mark it out
-						canvas.drawLine(x - w, y - h, x - w, y + h, paint);
-						canvas.drawLine(x - w, y - h, x + w, y - h, paint);
-						canvas.drawLine(x + w, y + h, x - w, y + h, paint);
-						canvas.drawLine(x + w, y + h, x + w, y - h, paint);
-					}
 					
-					//save new image
-					img = bitmap;
-
-					JSONObject arribute=null;
-					
-					String temp=null;
-					
-				try{
-				    arribute=rst.getJSONArray("face").getJSONObject(0).getJSONObject("attribute");
-					}catch (JSONException e) {
-			     	e.printStackTrace();	
-					}
-					
-					try{
-						temp=new String(String.format("年龄:%d波动范围%d\n性别:%s可信度%.2f\n种族:%s可信度%.2f\n微笑指数:%.2f",(int)arribute.getJSONObject("age").getDouble("value"), (int)arribute.getJSONObject("age").getDouble("range"),
-								arribute.getJSONObject("gender").getString("value"),arribute.getJSONObject("gender").getDouble("confidence"),
-								arribute.getJSONObject("race").getString("value"),arribute.getJSONObject("race").getDouble("confidence"),
-								arribute.getJSONObject("smiling").getDouble("value")));
-					}catch (JSONException e) {
-						e.printStackTrace();
-					}
-					
-					final String show=temp;
-					
-					
-					Facedetect.this.runOnUiThread(new Runnable() {
-						
-						public void run() {
-							//show the image
-							//imageView.setImageBitmap(img);
-							textView.setText("Finished, "+ count + " faces.");
-							textViewResult.setText(show);
-						}
-					});
-					
-				} catch (JSONException e) {
-			//		e.printStackTrace();
-				//	facedetect.this.runOnUiThread(new Runnable() {
-				///		public void run() {
-						textView.setText("Error.");
-				//		}
-				//	});
+		////////////////////computer simulation for healthvalue and beauty//////////////////////////////////////////		
+				Random random = new Random();
+				HealthArry = new float [6];
+				double ans=5;
+				
+				for(int i=0;i<5;i++)
+				{
+					HealthArry[i] = random.nextInt()%3;
+					ans=ans-(float)HealthArry[i]*0.5;
 				}
+				final double ans_health_show=ans;
+				final double ans_beauty_show=(int)(Math.random()*40+60);;
+       ////////////////////computer simulation healthvalue beauty//////////////////////////////////////////
+				Context ctx = Facedetect.this; 
+				
+				SharedPreferences sp = ctx.getSharedPreferences("map", MODE_PRIVATE);
+				
+				String current_user=sp.getString("username", "temp");
+				ddb=new daliydata(Facedetect.this,current_user+"health");
+				ddb.settablename(current_user+"health");
+				ddb.onCreate(ddb.getReadableDatabase());
+			    mCursor=ddb.select();
+			    ddb.insert("time:"+mCursor.getCount(), (int)ans_health_show);
+			    
+				Facedetect.this.runOnUiThread(new Runnable() {
+					
+					public void run() {
+						//show the image
+						//imageView.setImageBitmap(img);
+						textView.setText("健康指数:"+ans_health_show);
+						textViewResult.setText("魅力指数:"+ans_beauty_show);
+				
+					}
+				});
+				
+
 				
 			}
 		});
 		faceppDetect.detect(img);
 	
 
-
+        History_button.setOnClickListener(new OnClickListener(){
+        	public void onClick(View v){
+        	Intent intent=new Intent(Facedetect.this,ResultShow.class);
+        	startActivity(intent);
+        }
+	});
 //imageView = (ImageView)this.findViewById(R.id.imageView1);
 //imageView.setImageBitmap(img);
 }
@@ -215,42 +202,43 @@ public class Facedetect extends Activity {
 
 		public void detect(final Bitmap image) {
 			
+    		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    		float scale = Math.min(1, Math.min(600f / image.getWidth(), 600f / image.getHeight()));
+    		Matrix matrix = new Matrix();
+    		matrix.postScale(scale, scale);
+
+    		Bitmap imgSmall = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, false);
+    		//Log.v(TAG, "imgSmall size : " + imgSmall.getWidth() + " " + imgSmall.getHeight());
+    		
+    		imgSmall.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+    		byte[] array = stream.toByteArray();
+    		
 			new Thread(new Runnable() {
 				
 				public void run() {
-					HttpRequests httpRequests = new HttpRequests("4480afa9b8b364e30ba03819f3e9eff5", "Pz9VFT8AP3g_Pz8_dz84cRY_bz8_Pz8M", true, false);
-		    		//Log.v(TAG, "image size : " + img.getWidth() + " " + img.getHeight());
-		    		
-		    		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		    		float scale = Math.min(1, Math.min(600f / img.getWidth(), 600f / img.getHeight()));
-		    		Matrix matrix = new Matrix();
-		    		matrix.postScale(scale, scale);
-
-		    		Bitmap imgSmall = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, false);
-		    		//Log.v(TAG, "imgSmall size : " + imgSmall.getWidth() + " " + imgSmall.getHeight());
-		    		
-		    		imgSmall.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-		    		byte[] array = stream.toByteArray();
-		    		
+                 
+					
 		    		try {
-		    			//detect
-						JSONObject result = httpRequests.detectionDetect(new PostParameters().setImg(array));
+		    			//detect   //prepared for PicAnalysis	
+						JSONObject result =new JSONObject();//httpRequests.detectionDetect(new PostParameters().setImg(array));
+						result.put("health1", 3);
 						//finished , then call the callback function
 						if (callback != null) {
 							callback.detectResult(result);
 							System.out.println("result---->"+result);
 
 						}
-					} catch (FaceppParseException e) {
+					} catch (JSONException e) {
 						e.printStackTrace();
 						Facedetect.this.runOnUiThread(new Runnable() {
 							public void run() {
-								textView.setText("Network error.");
+								textView.setText("picAnalysis error.");
 								
 							}
 						});
 					}
 					
+				
 				}
 			}).start();
 		}

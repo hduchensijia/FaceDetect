@@ -6,21 +6,23 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 public class daliydata extends SQLiteOpenHelper 
 {
-	private final static String DATABASE_NAME = ".db"; 
+	private final static String DATABASE_NAME = "index_show.db"; 
 	private final static int DATABASE_VERSION = 1; 
-	private final static String TABLE_NAME = "data";
+	private  static String TABLE_NAME = "data";
 	public final static String DATE = "date";
 	public final static String HEALTH_VALUE = "health_value";
 	public final static String BOOK_AUTHOR = "map_y"; 
 	public final static String BOOK_DESC = "map_desc"; 
 	public daliydata(Context context,String username) { 
 		// TODO Auto-generated constructor stub
-		super(context, username+DATABASE_NAME, null, DATABASE_VERSION);
+		
+		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		TABLE_NAME=username;
 		} 
 	//´´½¨table @Override
 	public void onCreate(SQLiteDatabase db)
 	{ 
-		String sql = "CREATE TABLE " + TABLE_NAME + " (" + DATE + " text, " + HEALTH_VALUE + " INTEGER);";
+		String sql = "CREATE TABLE if not exists " + TABLE_NAME + " (" + DATE + " text, " + HEALTH_VALUE + " INTEGER);";
 		db.execSQL(sql);
 	}
 	@Override
@@ -46,7 +48,8 @@ public class daliydata extends SQLiteOpenHelper
 		
 	
 	
-		cv.put(date, value); 
+		cv.put(DATE, date);
+		cv.put(HEALTH_VALUE, value);
 		long row = db.insert(TABLE_NAME, null, cv); return row; } 
 	
 	
@@ -70,6 +73,8 @@ public class daliydata extends SQLiteOpenHelper
 		db.update(TABLE_NAME, cv, where, whereValue); 
 	}
 	
-
-}
+    public void settablename(String name){
+    	TABLE_NAME=name;
+    }
+    }
 
