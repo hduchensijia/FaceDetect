@@ -44,10 +44,7 @@ public class daliydata extends SQLiteOpenHelper
 	{
 		SQLiteDatabase db = this.getWritableDatabase(); 
 	/* ContentValues */
-		ContentValues cv = new ContentValues(); 
-		
-	
-	
+		ContentValues cv = new ContentValues(); 			
 		cv.put(DATE, date);
 		cv.put(HEALTH_VALUE, value);
 		long row = db.insert(TABLE_NAME, null, cv); return row; } 

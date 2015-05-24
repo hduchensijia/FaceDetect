@@ -138,7 +138,7 @@ public class MainActivity extends Activity {
 	        btmale=(Button)findViewById(R.id.button1);
 	        signout=(Button)findViewById(R.id.button2);
 	        userstate = (TextView)findViewById(R.id.textView1);
-	        userstate.setText(name_saved);
+	        userstate.setText("ÓÃ»§Ãû:"+name_saved);
 	        
 	        signout.setOnClickListener(new OnClickListener(){
 		        	public void onClick(View v){

@@ -21,7 +21,9 @@ import com.gem.hsx.sqlite.daliydata;
 
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,7 +32,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.View;
@@ -39,13 +43,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.database.Cursor;
-public class Facedetect extends Activity {
+public class Facedetect extends Activity  {
 	private ImageView faceshow;
 	
 	////////////////////////////////////////////////////
 	final private int PICTURE_CHOOSE = 1;
 	//private String show=null;
 	private ImageView imageView = null;
+	private ProgressDialog mSaveDialog = null;
 	private Bitmap img = null;
 	private Button buttonDetect = null;
 	private TextView textView = null;
@@ -54,6 +59,10 @@ public class Facedetect extends Activity {
 	private daliydata ddb;
 	private Cursor mCursor;
 	private Button History_button;
+	private ProgressDialog progressDialog;
+	private int count;
+	private Handler mHandler;
+	private int DrawProcessCount=0;
 	/////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -91,11 +100,15 @@ public class Facedetect extends Activity {
 			    Bitmap newbmp = Bitmap.createBitmap(oldbmp, 0, 0, width, height,  
 			          matrix, true);  
 			    faceshow.setImageBitmap(newbmp);  
-                img=oldbmp;
+                img=newbmp;
 		}
+		////////////show process////////////////////////////////////////
+		//DrawProcess(img);
+    	mHandler = new Handler();
+		mHandler.post(new TimerProcess());
 		
 		
-		
+		 mSaveDialog = ProgressDialog.show(Facedetect.this, "图片正在分析中", "请稍等...", true); 
 		FaceppDetect faceppDetect = new FaceppDetect();
 		faceppDetect.setDetectCallback(new DetectCallback() {
 			
@@ -139,17 +152,34 @@ public class Facedetect extends Activity {
 			    mCursor=ddb.select();
 			    ddb.insert("time:"+mCursor.getCount(), (int)ans_health_show);
 			    
-				Facedetect.this.runOnUiThread(new Runnable() {
-					
-					public void run() {
-						//show the image
-						//imageView.setImageBitmap(img);
-						textView.setText("����ָ��:"+ans_health_show);
-						textViewResult.setText("����ָ��:"+ans_beauty_show);
-				
-					}
-				});
-				
+			    new  Thread()
+			     {
+			    	public void run() {          
+			    	 try {     
+			    		    while(DrawProcessCount<img.getHeight())
+			    		    {
+			    			 sleep(500);        
+			    		    }
+			    		 } catch (InterruptedException e) {         				        
+			    		     e.printStackTrace();                  
+			    		 } finally{   
+			
+    						Facedetect.this.runOnUiThread(new Runnable() {
+    							public void run() {
+    								//show the image
+    								//imageView.setImageBitmap(img);	
+    								mSaveDialog.dismiss(); 
+    								textView.setText("健康指数:"+ans_health_show);
+    								textViewResult.setText("魅力指数:"+ans_beauty_show);   						
+    							}
+    						});
+		    					 //messageListener.sendEmptyMessage(0);     					 
+			    	     }            
+			    	}
+			    		 
+			     }.start();
+
+			    
 
 				
 			}
@@ -169,11 +199,53 @@ public class Facedetect extends Activity {
 	
 
 	
+/*
+private Handler messageListener = new Handler(){     
+	public void handleMessage(Message msg) {    
+		switch(msg.arg1)
+		{        
+		case TASK_LOOP_COMPLETE:      
+			pd.dismiss();      
+			break;                
+			}      
+		}  
+	};
 
+*/
+    public void DrawProcess(Bitmap bi){
+		Paint paint = new Paint();
+		paint.setColor(Color.YELLOW);
+		
+		//鐢诲妗�
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(3);
+		//paint.setStrokeWidth(Pain);		
+		//Rect chartRec = new Rect(0, 0,50, 50);
+		Canvas can=new Canvas(bi);
+		//can.drawRect(chartRec, paint);
+		Path path = new Path();  
+		int py=(DrawProcessCount++)%can.getHeight();
+		path.moveTo(0,py );
+		path.lineTo(can.getWidth(), py);
+		can.drawPath(path, paint);
+		
 
-
-
-
+    }
+    
+	private class TimerProcess implements Runnable {
+		public void run() {
+			//faceshow.postInvalidate();
+			Bitmap temp=Bitmap.createBitmap(img);
+			faceshow.setImageBitmap(temp);
+			DrawProcess(temp);	
+			Canvas can=new Canvas(temp);
+			if(DrawProcessCount<can.getHeight()){
+				mHandler.postDelayed(this, 100);
+			}
+			
+			
+		}
+	}
 	public static Bitmap drawableToBitmap(Drawable drawable) {  
 		          
 		        Bitmap bitmap = Bitmap.createBitmap(  
