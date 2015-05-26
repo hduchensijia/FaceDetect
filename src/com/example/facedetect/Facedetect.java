@@ -10,44 +10,56 @@ import org.json.JSONObject;
 
 
 import com.canvas.draw.ResultShow;
+
 import com.example.mainview.MainActivity;
 import com.facepp.error.FaceppParseException;
 import com.facepp.http.HttpRequests;
 import com.facepp.http.PostParameters;
 import com.gem.hsx.sqlite.daliydata;
 
+
 ///import com.facpp.picturedetect.R;
 //import com.facpp.picturedetect.R;
+
+import android.media.FaceDetector;
+import android.net.Uri;
 
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.database.Cursor;
 public class Facedetect extends Activity  {
 	private ImageView faceshow;
 	
 	////////////////////////////////////////////////////
 	final private int PICTURE_CHOOSE = 1;
+	final private int MAX_FACES = 1;
 	//private String show=null;
 	private ImageView imageView = null;
 	private ProgressDialog mSaveDialog = null;
@@ -63,6 +75,11 @@ public class Facedetect extends Activity  {
 	private int count;
 	private Handler mHandler;
 	private int DrawProcessCount=0;
+	private RectF faceRects[]=new RectF [MAX_FACES];
+	private int detectedFaces=0;
+	private Bitmap oldbmp;
+	float scaleWidth;
+	float scaleHeight ;
 	/////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +92,37 @@ public class Facedetect extends Activity  {
 		 History_button=(Button)findViewById(R.id.button1);
 		 
 		Bundle bundle = getIntent().getExtras();
+		
 		boolean local=bundle.getBoolean("local");
+		Uri selectedImage = Uri.parse(getIntent().getExtras().getString("imageUri"));
+
 		if(local){
 			
 		
-			Bitmap bitmap = bundle.getParcelable("bitmap");
-			faceshow.setImageBitmap(bitmap);
-			img=bitmap;
+			//Bitmap bitmap = bundle.getParcelable("bitmap");
+
 		
+           String[] filePathColumn = { MediaStore.Images.Media.DATA };
+	          
+            Cursor cursor = getContentResolver().query(selectedImage,
+
+                    filePathColumn, null, null, null);
+
+            cursor.moveToFirst();
+
+            
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+
+            String picturePath = cursor.getString(columnIndex);
+
+            cursor.close();
+
+           // Bitmap bitmap=BitmapFactory.decodeFile(picturePath);
+            Bitmap bitmap=BitmapFactory.decodeFile(picturePath).copy(Bitmap.Config.RGB_565, true);  
+			faceshow.setImageBitmap(bitmap);
+			oldbmp=bitmap;
+	
 		}else{
 			
 			   Drawable dra=Drawable.createFromPath(new File(  
@@ -92,20 +132,68 @@ public class Facedetect extends Activity  {
 			   
 			   int width = dra.getIntrinsicWidth();
 			   int height = dra.getIntrinsicHeight();
-			   Bitmap oldbmp = drawableToBitmap(dra);  
-			    Matrix matrix = new Matrix();  
-			   float scaleWidth = ((float) 150 / width);  
-		       float scaleHeight = ((float) 150 / height);  
-			    matrix.postScale(scaleWidth, scaleHeight);  
-			    Bitmap newbmp = Bitmap.createBitmap(oldbmp, 0, 0, width, height,  
-			          matrix, true);  
-			    faceshow.setImageBitmap(newbmp);  
-                img=newbmp;
+			   oldbmp = drawableToBitmap(dra);  
 		}
+		
+	    Matrix matrix = new Matrix();  
+	   scaleWidth = ((float) 150 / oldbmp.getWidth());  
+       scaleHeight = ((float) 150 / oldbmp.getHeight());  
+	    matrix.postScale(scaleWidth, scaleHeight);  
+	    Bitmap newbmp = Bitmap.createBitmap(oldbmp, 0, 0, oldbmp.getWidth(), oldbmp.getHeight(),  
+	          matrix, true);  
+	    faceshow.setImageBitmap(newbmp);  
+        img=newbmp;
+		
+		Bitmap tmpBmp = img.copy(Bitmap.Config.RGB_565, true);
+
+		FaceDetector faceDet = new FaceDetector(tmpBmp.getWidth(), tmpBmp.getHeight(), MAX_FACES); 
+
+		FaceDetector.Face[] faceList = new FaceDetector.Face[MAX_FACES];
+
+		faceDet.findFaces(tmpBmp, faceList);
+      
+
+			for (int i=0; i < faceList.length; i++) {
+
+                FaceDetector.Face face = faceList[i];
+
+                Log.d("FaceDet", "Face ["+face+"]");
+
+                if (face != null) {
+
+                    Log.d("FaceDet", "Face ["+i+"] - Confidence ["+face.confidence()+"]");
+
+                    PointF pf = new PointF();
+
+                    //getMidPoint(PointF point);
+
+                    //Sets the position of the mid-point between the eyes.
+
+                    face.getMidPoint(pf);
+
+                    Log.d("FaceDet", "\t Eyes distance ["+face.eyesDistance()+"] - Face midpoint ["+pf.x+"&"+pf.y+"]");
+
+                    RectF r = new RectF();
+
+                    r.left = pf.x - face.eyesDistance() / 2;
+
+                    r.right = pf.x + face.eyesDistance() / 2;
+
+                    r.top = pf.y - face.eyesDistance() / 2;
+
+                    r.bottom = pf.y + face.eyesDistance() / 2;
+
+                    faceRects[i] = r;
+
+                    detectedFaces++;
+
+                }
+
+            }
 		////////////show process////////////////////////////////////////
 		//DrawProcess(img);
     	mHandler = new Handler();
-		mHandler.post(new TimerProcess());
+	    mHandler.post(new TimerProcess());
 		
 		
 		 mSaveDialog = ProgressDialog.show(Facedetect.this, "图片正在分析中", "请稍等...", true); 
@@ -124,10 +212,7 @@ public class Facedetect extends Activity  {
 				Bitmap bitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(), img.getConfig());
 				Canvas canvas = new Canvas(bitmap);
 				canvas.drawBitmap(img, new Matrix(), null);
-				
-				
-
-					
+		
 		////////////////////computer simulation for healthvalue and beauty//////////////////////////////////////////		
 				Random random = new Random();
 				HealthArry = new float [6];
@@ -168,20 +253,28 @@ public class Facedetect extends Activity  {
     							public void run() {
     								//show the image
     								//imageView.setImageBitmap(img);	
-    								mSaveDialog.dismiss(); 
-    								textView.setText("健康指数:"+ans_health_show);
-    								textViewResult.setText("魅力指数:"+ans_beauty_show);   						
+    								if(detectedFaces==0){
+    									 Intent intent=new Intent(Facedetect.this,MainActivity.class);
+    									 startActivity(intent);
+    									 
+    									// ProgressDialog.show(Facedetect.this, "未识别出人脸请", "请重新选择...", true);
+    									 Toast.makeText(Facedetect.this, "未识别出人脸请,请重新选择", 4).show();
+
+    									 Facedetect.this.finish();
+    									 
+    								}else{
+   									    								
+	    								mSaveDialog.dismiss(); 
+	    								textView.setText("健康指数:"+ans_health_show);
+	    								textViewResult.setText("魅力指数:"+ans_beauty_show);   
+    								}
     							}
     						});
 		    					 //messageListener.sendEmptyMessage(0);     					 
 			    	     }            
 			    	}
 			    		 
-			     }.start();
-
-			    
-
-				
+			     }.start();				
 			}
 		});
 		faceppDetect.detect(img);
@@ -235,12 +328,42 @@ private Handler messageListener = new Handler(){
 	private class TimerProcess implements Runnable {
 		public void run() {
 			//faceshow.postInvalidate();
+			Paint paint = new Paint();
 			Bitmap temp=Bitmap.createBitmap(img);
 			faceshow.setImageBitmap(temp);
 			DrawProcess(temp);	
 			Canvas can=new Canvas(temp);
 			if(DrawProcessCount<can.getHeight()){
-				mHandler.postDelayed(this, 100);
+				mHandler.postDelayed(this, 60);
+			}else{
+				int width=can.getWidth();
+				int imgWidth=150;
+				paint.setColor(Color.YELLOW);
+				
+				//鐢诲妗�
+				paint.setStyle(Paint.Style.STROKE);
+				paint.setStrokeWidth(3);
+		        for (int i=0; i < detectedFaces; i++) {
+
+		            RectF r = faceRects[i];
+		             
+		            Log.v("FaceView","r.top="+r.top);
+
+		            r.top=(r.top*width)/imgWidth;
+
+		            r.left=(r.left*width)/imgWidth;
+
+		            r.right=(r.right*width)/imgWidth;
+
+		            r.bottom=(r.bottom*width)/imgWidth;
+
+
+
+		            if (r != null)
+
+		                can.drawRect(r, paint);
+
+		        }
 			}
 			
 			

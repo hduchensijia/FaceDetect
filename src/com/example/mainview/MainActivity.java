@@ -169,14 +169,15 @@ public class MainActivity extends Activity {
 	                        	       Intent intent = new Intent(Intent.ACTION_GET_CONTENT);  
 	                        	       intent.addCategory(Intent.CATEGORY_OPENABLE);  
 	                        	       intent.setType("image/*");  
-	                        	       
+	                        	    /*   
 	                        	       intent.putExtra("crop", "true");  
 	                                   intent.putExtra("aspectX",1);  
 	                                   intent.putExtra("aspectY",1);  
 	                        	       intent.putExtra("outputX", 80);  
-	                        	       intent.putExtra("outputY", 80);  
-	                        	       intent.putExtra("return-data",true); 
-	                        	       
+	                        	       intent.putExtra("outputY", 80);
+	                        	         */  
+	                        	      // intent.putExtra("return-data",true); 
+	                        	     
 	                        	       startActivityForResult(intent, 11);  
 	
 	                            }
@@ -218,14 +219,21 @@ public class MainActivity extends Activity {
 		   if(requestCode==11){
 
 			   System.out.println("requestCode"+requestCode);  
-			   Bitmap cameraBitmap = (Bitmap) data.getExtras().get("data");  
+			  // Bitmap cameraBitmap = (Bitmap) data.getExtras().get("data");  
 			   super.onActivityResult(requestCode, resultCode, data);  
+			   Uri selectedImage = data.getData();
+			   Bundle bundle = new Bundle();  
 			   
-			   Bundle bundle = new Bundle();        
-			   bundle.putParcelable("bitmap", cameraBitmap);
+
+			   
+	           // bundle.put
+			 //  bundle.putParcelable("bitmap", galleryBmp);
 			   bundle.putBoolean("local", true);
+			   
 			   Intent intent=new Intent(MainActivity.this,Facedetect.class);
 			   intent.putExtras( bundle);
+			   intent.putExtra("imageUri", selectedImage.toString());
+
 			   startActivity(intent);
 			   
 		   }else{
