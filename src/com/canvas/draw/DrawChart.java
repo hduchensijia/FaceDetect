@@ -35,7 +35,7 @@ public class DrawChart extends View{
 	private int OFFSET_LEFT = 70;
 	private int OFFSET_TOP = 80;
 	private int TEXT_OFFSET = 20;
-	private int X_INTERVAL = 65;
+	private int X_INTERVAL = 50;
 	private daliydata ddb;
     private Cursor	mCursor;
     private int Current_Page=1;
@@ -50,11 +50,13 @@ public class DrawChart extends View{
 		String date;
 	}
 	
-	private List<yandxname> plist;
+	private List<yandxname> plistH;
+	private List<yandxname> plistM;
 	
 	public DrawChart(Context context) {
 		super(context);
-		plist = new ArrayList<yandxname>();
+		plistH = new ArrayList<yandxname>();
+		plistM = new ArrayList<yandxname>();
 		initCurrentPage();
 		prepareLine();
 	}
@@ -87,6 +89,19 @@ public class DrawChart extends View{
 		paint.setAntiAlias(true);
 		canvas.drawTextOnPath("健康指数", textPath, 0, 0, paint);
 	
+		
+		//魅力指数杈圭殑鏂囧瓧
+		Path textPathM = new Path();
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.RED);
+		textPathM.moveTo(30, 540);
+		textPathM.lineTo(30, 420);
+		paint.setTextSize(15);
+		paint.setAntiAlias(true);
+		canvas.drawTextOnPath("魅力指数", textPathM, 0, 0, paint);
+		
+		
+		
 		//鐢诲乏渚ф暟瀛�
         canvas.drawText("100", OFFSET_LEFT - TEXT_OFFSET, OFFSET_TOP+5, paint);
         for(int i = 1 ; i<10 ; i++){
@@ -95,7 +110,9 @@ public class DrawChart extends View{
         canvas.drawText("0", OFFSET_LEFT - TEXT_OFFSET -10, OFFSET_TOP + CHARTH, paint);
         
         
-  
+        
+        
+        paint.setColor(Color.WHITE);
         //鐢昏〃鏍间腑鐨勮櫄绾�
         Path path = new Path();     
         PathEffect effects = new DashPathEffect(new float[]{2,2,2,2},1);
@@ -118,15 +135,32 @@ public class DrawChart extends View{
 		paint.setAntiAlias(true);
 		//canvas.drawLines(line, paint);
 		
-		if(plist.size() >= 2){
+		if(plistH.size() >= 2){
 			int i=0;
-			for( i= (Current_Page-1)*7; i<Current_Page*7-1 && i<plist.size()-1; i++){
-				canvas.drawLine(plist.get(i).p.x, plist.get(i).p.y, plist.get(i+1).p.x, plist.get(i+1).p.y, paint);
-				canvas.drawText(plist.get(i).date, OFFSET_LEFT +(i%7)*X_INTERVAL-15,CHARTH+OFFSET_TOP+25, paint);
+			for( i= (Current_Page-1)*7; i<Current_Page*7-1 && i<plistH.size()-1; i++){
+				canvas.drawLine(plistH.get(i).p.x, plistH.get(i).p.y, plistH.get(i+1).p.x, plistH.get(i+1).p.y, paint);
+				canvas.drawText(plistH.get(i).date, OFFSET_LEFT +(i%7)*X_INTERVAL,CHARTH+OFFSET_TOP+25, paint);
 			}
 		
 			
-			canvas.drawText(plist.get(plist.size()-1).date, OFFSET_LEFT +(i%7)*X_INTERVAL-15,CHARTH+OFFSET_TOP+25, paint);
+			canvas.drawText(plistH.get(plistH.size()-1).date, OFFSET_LEFT +(i%7)*X_INTERVAL,CHARTH+OFFSET_TOP+25, paint);
+			
+		}
+		
+		paint.setColor(Color.RED);
+		paint.setStrokeWidth(3);
+		paint.setAntiAlias(true);
+		//canvas.drawLines(line, paint);
+		
+		if(plistM.size() >= 2){
+			int i=0;
+			for( i= (Current_Page-1)*7; i<Current_Page*7-1 && i<plistM.size()-1; i++){
+				canvas.drawLine(plistM.get(i).p.x, plistM.get(i).p.y, plistM.get(i+1).p.x, plistM.get(i+1).p.y, paint);
+				canvas.drawText(plistM.get(i).date, OFFSET_LEFT +(i%7)*X_INTERVAL,CHARTH+OFFSET_TOP+25, paint);
+			}
+		
+			
+			canvas.drawText(plistM.get(plistM.size()-1).date, OFFSET_LEFT +(i%7)*X_INTERVAL,CHARTH+OFFSET_TOP+25, paint);
 			
 		}
 	}
@@ -148,21 +182,33 @@ public class DrawChart extends View{
 		}
 		
 		
-
-		
 		if(mCursor.moveToFirst()){
 			for(int i=0;i<mCursor.getCount();i++){
 				yandxname temp=new yandxname();
 				temp.p=new Point();
-				temp.p.x=i%7*X_INTERVAL+OFFSET_LEFT;
-				temp.p.y=mCursor.getInt(mCursor.getColumnIndex("health_value"))*20+OFFSET_TOP;
+				temp.p.x=i%7*X_INTERVAL+OFFSET_LEFT+20;
+				temp.p.y=(int)(mCursor.getInt(mCursor.getColumnIndex("health_value"))*20/100.0*(CHARTH - OFFSET_TOP))+OFFSET_TOP;
 				temp.date=mCursor.getString(mCursor.getColumnIndex("date"));
 				mCursor.moveToNext();
-				plist.add(temp);
+				plistH.add(temp);
 			}
 			
 		}
+		
+		ddb.settablename(current_user+"beauty");
+		mCursor = ddb.select();
+		if(mCursor.moveToFirst()){
+			for(int i=0;i<mCursor.getCount();i++){
+				yandxname temp=new yandxname();
+				temp.p=new Point();
+				temp.p.x=i%7*X_INTERVAL+OFFSET_LEFT+20;
+				temp.p.y=(int)(mCursor.getInt(mCursor.getColumnIndex("health_value"))/100.0*(CHARTH - OFFSET_TOP))+OFFSET_TOP;
+				temp.date=mCursor.getString(mCursor.getColumnIndex("date"));
+				mCursor.moveToNext();
+				plistM.add(temp);
+			}
 			
+		}
 
 
 	}

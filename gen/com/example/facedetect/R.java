@@ -27,31 +27,33 @@ public final class R {
         public static final int move=0x7f020006;
     }
     public static final class id {
-        public static final int addframe=0x7f08000c;
-        public static final int button1=0x7f080007;
-        public static final int button2=0x7f080008;
-        public static final int drawIV=0x7f08000a;
-        public static final int editText1=0x7f08000e;
-        public static final int editText2=0x7f08000f;
-        public static final int editText3=0x7f080012;
-        public static final int editText4=0x7f080017;
-        public static final int gender=0x7f080013;
+        public static final int addframe=0x7f08000e;
+        public static final int button1=0x7f080005;
+        public static final int button2=0x7f08000a;
+        public static final int drawIV=0x7f08000c;
+        public static final int editText1=0x7f080010;
+        public static final int editText2=0x7f080011;
+        public static final int editText3=0x7f080014;
+        public static final int editText4=0x7f080019;
+        public static final int gender=0x7f080015;
         public static final int imageButton1=0x7f080001;
         public static final int imageButton2=0x7f080002;
         public static final int imageButton3=0x7f080003;
         public static final int imageView1=0x7f080004;
-        public static final int menu_settings=0x7f080018;
-        public static final int minusframe=0x7f08000d;
-        public static final int previewSV=0x7f080009;
-        public static final int radioButton1=0x7f080015;
-        public static final int radioButton2=0x7f080014;
+        public static final int menu_settings=0x7f08001a;
+        public static final int minusframe=0x7f08000f;
+        public static final int previewSV=0x7f08000b;
+        public static final int radioButton1=0x7f080017;
+        public static final int radioButton2=0x7f080016;
+        public static final int ratingBar1=0x7f080007;
+        public static final int ratingBar2=0x7f080006;
         public static final int root=0x7f080000;
-        public static final int takephoto=0x7f08000b;
-        public static final int textView1=0x7f080005;
-        public static final int textView2=0x7f080006;
-        public static final int textView3=0x7f080010;
-        public static final int textView4=0x7f080011;
-        public static final int textView5=0x7f080016;
+        public static final int takephoto=0x7f08000d;
+        public static final int textView1=0x7f080009;
+        public static final int textView2=0x7f080008;
+        public static final int textView3=0x7f080012;
+        public static final int textView4=0x7f080013;
+        public static final int textView5=0x7f080018;
     }
     public static final class layout {
         public static final int activity_detect_result=0x7f030000;

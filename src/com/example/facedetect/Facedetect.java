@@ -51,6 +51,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.database.Cursor;
@@ -78,8 +79,12 @@ public class Facedetect extends Activity  {
 	private RectF faceRects[]=new RectF [MAX_FACES];
 	private int detectedFaces=0;
 	private Bitmap oldbmp;
+	private Uri selectedImage;
+	private RatingBar ratH;
+	private RatingBar ratM;
 	float scaleWidth;
 	float scaleHeight ;
+	
 	/////////////////////////////////////////////////////////
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +95,16 @@ public class Facedetect extends Activity  {
 		 textView = (TextView)this.findViewById(R.id.textView1);
 		 textViewResult= (TextView)this.findViewById(R.id.textView2);
 		 History_button=(Button)findViewById(R.id.button1);
-		 
+		 ratH=(RatingBar)findViewById(R.id.ratingBar1);
+		 ratM=(RatingBar)findViewById(R.id.ratingBar2);
 		Bundle bundle = getIntent().getExtras();
 		
 		boolean local=bundle.getBoolean("local");
-		Uri selectedImage = Uri.parse(getIntent().getExtras().getString("imageUri"));
+		
 
 		if(local){
 			
-		
+			 selectedImage = Uri.parse(getIntent().getExtras().getString("imageUri"));
 			//Bitmap bitmap = bundle.getParcelable("bitmap");
 
 		
@@ -220,7 +226,7 @@ public class Facedetect extends Activity  {
 				
 				for(int i=0;i<5;i++)
 				{
-					HealthArry[i] = random.nextInt()%3;
+					HealthArry[i] =Math.abs(random.nextInt()%3);
 					ans=ans-(float)HealthArry[i]*0.5;
 				}
 				final double ans_health_show=ans;
@@ -236,6 +242,12 @@ public class Facedetect extends Activity  {
 				ddb.onCreate(ddb.getReadableDatabase());
 			    mCursor=ddb.select();
 			    ddb.insert("time:"+mCursor.getCount(), (int)ans_health_show);
+			    
+			    
+				ddb.settablename(current_user+"beauty");
+				ddb.onCreate(ddb.getReadableDatabase());
+			    mCursor=ddb.select();
+			    ddb.insert("time:"+mCursor.getCount(), (int)ans_beauty_show/20);
 			    
 			    new  Thread()
 			     {
@@ -259,14 +271,15 @@ public class Facedetect extends Activity  {
     									 
     									// ProgressDialog.show(Facedetect.this, "未识别出人脸请", "请重新选择...", true);
     									 Toast.makeText(Facedetect.this, "未识别出人脸请,请重新选择", 4).show();
-
+                                        
     									 Facedetect.this.finish();
     									 
     								}else{
-   									    								
+    									 ratH.setRating((float)ans_health_show);	
+    									 ratM.setRating((float)ans_beauty_show/20);
 	    								mSaveDialog.dismiss(); 
-	    								textView.setText("健康指数:"+ans_health_show);
-	    								textViewResult.setText("魅力指数:"+ans_beauty_show);   
+	    								textView.setText("健康指数:");//+ans_health_show);
+	    								textViewResult.setText("魅力指数:");//+ans_beauty_show);   
     								}
     							}
     						});

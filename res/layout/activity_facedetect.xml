@@ -17,29 +17,46 @@
         android:minWidth="150dp"
         android:src="@drawable/dig_clolor" />
 
-    <TextView
-        android:id="@+id/textView1"
+    <Button
+        android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/imageView1"
+        android:text="@string/history_index" />
+
+    <RatingBar
+        android:id="@+id/ratingBar2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ratingBar1"
         android:layout_centerHorizontal="true"
-        android:text="TextView" />
+        android:layout_marginTop="40dp"
+        android:isIndicator="true" />
+
+    <RatingBar
+        android:id="@+id/ratingBar1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ratingBar2"
+        android:layout_centerVertical="true"
+        android:isIndicator="true" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/imageView1"
-        android:layout_marginTop="135dp"
+        android:layout_below="@+id/ratingBar1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
         android:text="TextView" />
 
-    <Button
-        android:id="@+id/button1"
+    <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView1"
-        android:layout_toRightOf="@+id/imageView1"
-        android:text="@string/history_index" />
+        android:layout_above="@+id/ratingBar1"
+        android:layout_alignLeft="@+id/textView2"
+        android:text="TextView" />
 
 </RelativeLayout>
